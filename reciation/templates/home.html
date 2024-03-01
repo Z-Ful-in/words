@@ -1,0 +1,144 @@
+{% extends "Layout/basic.html" %}
+
+{% block content %}
+<div class="panel-heading" style="text-align: center;">
+    <h3 class="panel-title">Your Random Reciation</h3>
+    <div class="panel-body" style="text-align: center;">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>word</th>
+                    <th>Still Remember?</th>
+                    <th>example</th>
+                </tr>
+                <tbody>
+                    {% for field in form %}
+                        <tr>
+                            <td>{{ field.word}}</td>
+                                <td>
+                                    <button id="FamBtn" class="btn btn-success">Familar</button>
+                                    <button id="RemBtn" class="btn btn-primary">Clear</button>
+                                    <button id="BurBtn" class="btn btn-warning">Blurred</button>
+                                    <button id="ForBtn" class="btn btn-danger">Forgotten</button>
+                                </td>
+                                {% comment "clear blurred forgotten" %}{% endcomment %}
+                            <td>
+                                {{field.example}}
+                            </td>
+                        </tr>                    
+                    {% endfor %}   
+                </tbody>
+            </thead>
+        </table>
+    </div>
+    {% comment %} <a href="{% url 'addwords' %}" class="btn btn-primary">Add Word</a> {% endcomment %}
+    <a href="{% url 'display' %}" class="btn btn-primary">Go to wordlist</a>
+    <button class="btn btn-primary" id="F5"> Refresh </button>
+</div>
+{% endblock content %}
+
+{% block script %}
+<script>
+    // get csrf token
+    let cookies = document.cookie.split(',');
+    let pattern = /csrftoken=(.*)/m;
+    for(let j=0; j<cookies.length; j++){
+        if(pattern.test(cookies[j])){
+            var csrf = pattern.exec( cookies[j])[1];
+        }
+    }
+    
+    // button lists
+    var FamButtons = document.querySelectorAll('button[id="FamBtn"]');
+    var RemButtons = document.querySelectorAll('button[id="RemBtn"]');
+    var BlurButtons = document.querySelectorAll('button[id="BurBtn"]');
+    var ForButtons = document.querySelectorAll('button[id="ForBtn"]');
+
+    // event
+    $("#F5").click(function(){
+        location.reload(true);
+    });
+
+    // button function
+    function FamFunction(rank){
+        let word=$("td").eq(rank*3).text();
+        $.ajax({
+            url: "/reciation/recite/", 
+            type: "POST",
+            dataType: "json",
+            data: {
+                csrfmiddlewaretoken: csrf,
+                word: word,
+                status: 'fam',
+            },
+            success: function(data){
+                alert("GoodBye! "+word+" ("+data['meaning']+")!")
+            }
+        });
+    }
+    function RemFunction(rank){
+        let word=$("td").eq(rank*3).text();
+        $.ajax({
+            url: "/reciation/recite/", 
+            type: "POST",
+            dataType: "json",
+            data: {
+                csrfmiddlewaretoken: csrf,
+                word: word,
+                status: 'rem',
+            },
+            success: function(data){
+                alert("Good! The word "+word+ "'s meaning is "+data['meaning'])
+            }
+        });
+    }
+    function BlurFunction(rank){
+        let word=$("td").eq(rank*3).text();
+        $.ajax({
+            url: "/reciation/recite/", 
+            type: "POST",
+            data: {
+                'csrfmiddlewaretoken': csrf,
+                'word': word,
+                'status': 'blur',
+            },
+            success: function(data){
+                alert("Such a pity! The word "+data['word']+ "'s meaning is "+data['meaning'])
+            }
+        });
+    }
+    function ForFunction(rank){
+        let word=$("td").eq(rank*3).text();
+        $.ajax({
+            url: "/reciation/recite/", 
+            type: "POST",
+            data: {
+                'csrfmiddlewaretoken': csrf,
+                'word': word,
+                'status': 'for',
+            },
+            success: function(data){
+                alert("Emmm...The word "+data['word']+ "'s meaning is "+data['meaning'])
+            }
+        });
+    }
+
+    // add event listener
+    for (let i = 0; i < RemButtons.length; i++) {
+        FamButtons[i].addEventListener('click', (function() {
+            if(confirm("Are you FAMILIAR?")){
+                FamFunction(i);
+            }
+        }));
+        RemButtons[i].addEventListener('click', (function() {
+            RemFunction(i);
+        }));
+        BlurButtons[i].addEventListener('click', (function() {
+            BlurFunction(i);
+        }));
+        ForButtons[i].addEventListener('click', (function() {
+            ForFunction(i);
+        }));
+    }
+</script>
+{% endblock script %}

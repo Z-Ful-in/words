@@ -1,0 +1,89 @@
+{% extends "Layout/basic.html" %}
+
+{% block content %}
+<div class="panel-heading" style="text-align: center;">
+    <h3 class="panel-title">Your Random Spelling</h3>
+    <div class="panel-body" style="text-align: center;">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>word</th>
+                    <th>meaning</th>
+                    <th>submit</th>
+                </tr>
+                <tbody>
+                    {% for field in form %}
+                        <tr>
+                           
+                                <td>
+                                    <input id="word" type="text" name="word" placeholder="word" class="form-control" required="required"  autocomplete="off">
+                                </td>
+                                 <td>{{ field.meaning}}</td>
+                            <td>
+                                <button class="btn btn-primary" id="SubBtn">
+                                        Submit
+                                </button>
+                            </td>
+                        </tr>                    
+                    {% endfor %}   
+                </tbody>
+            </thead>
+        </table>
+    </div>
+    {% comment %} <a href="{% url 'addwords' %}" class="btn btn-primary">Add Word</a> {% endcomment %}
+    <a href="{% url 'display' %}" class="btn btn-primary">Go to wordlist</a>
+    <button id="F5" class= "btn btn-primary"> Refresh </button>
+</div>
+{% endblock content %}
+
+
+{% block script %}
+<script>
+    let SubBtns = document.querySelectorAll('button[id="SubBtn"]');
+    let cookies = document.cookie.split(',');
+    let pattern = /csrftoken=(.*)/m;
+    for(let j=0; j<cookies.length; j++){
+        if(pattern.test(cookies[j])){
+            var csrf = pattern.exec( cookies[j])[1];
+        }
+    }
+
+    function SubmitFunction(rank){
+        let words=document.querySelectorAll('input[id="word"]')
+        let meaning= $("td").eq(rank*3+1).text();
+        let word= words[rank+1].value;
+        $.ajax({
+            url: '/reciation/check/',
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                csrfmiddlewaretoken: csrf,
+                meaning: meaning,
+                word: word,
+            },
+            success: function(data){
+                status= data['status']
+                if(status == 'error'){
+                    alert("WRONG! Answer is "+data['word']+"!");
+                }
+                else{
+                    alert("True! Your correct rate is "+(data['correct_rate']*100).toFixed(2)+"%!");
+                }
+            },
+            error: function(data){
+                alert("WRONG!");
+            }
+        });
+    }
+    
+    for(let i=0; i < SubBtns.length; i++){
+        SubBtns[i].addEventListener('click',function(){
+                SubmitFunction(i);
+        })
+    }
+
+    $("#F5").click(function(){
+        location.reload(true)
+    })
+</script>
+{% endblock script %}

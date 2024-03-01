@@ -1,0 +1,180 @@
+{% extends "Layout/basic.html" %}
+
+
+{% block content %}
+<div class="panel-heading" style="text-align: center;">
+    <h3 class="panel-title">Your Word List</h3>
+    {% if form.has_previous %}
+    <a href="?page=1">First</a>
+    <a href="?page={{ form.previous_page_number }}">Previous</a>
+{% endif %}
+<span class="current">
+    Page {{ form.number }} of {{ form.paginator.num_pages }}
+</span>
+{% if form.has_next %}
+    <a href="?page={{ form.next_page_number }}">Next</a>
+    <a href="?page={{ form.paginator.num_pages }}">Last</a>
+{% endif %}
+    <div class="panel-body" style="text-align: center;">
+        <table class="table table-hover" id="WordList">
+            <thead>
+                <tr>
+                    <th>Word</th>
+                    <th>Meaning</th>
+                    <th>Operation</th>
+                </tr>
+                <tbody>
+                    {% for word in form %}
+                        <tr>
+                          <td>{{ word.word }}</td>
+                           <td>{{ word.meaning }}</td>
+                            <td>
+                                <button id="EdiBtn" class="btn btn-primary">Edit</button>
+                                <button id="delBtn" class="btn btn-danger">Delete</button>
+                            </td>
+                        </tr>   
+                    {% endfor %}
+                </tbody>
+            </thead> 
+        </table>
+    </div>
+    <a href="/reciation/printList" class="btn btn-success">Print Your WordList</a>
+    <a href="/reciation" class="btn btn-primary ">Recite</a>
+    <button name="AddRowBtn" class="btn btn-primary" id="AddRowBtn">Add</button>
+    <a href="/reciation/spell" class="btn btn-primary ">Spell</a>
+
+</div>
+{% endblock content %}
+
+
+{% block script %}
+
+    <script>
+       // Get delBtns and EdiBtns
+        var delButtons = document.querySelectorAll('button[id="delBtn"]');
+        var ediButtons=document.querySelectorAll('button[id="EdiBtn"]');
+        // implement the delete in server
+        function delFunction(word) {
+            let cookies = document.cookie.split(',');
+            let pattern = /csrftoken=(.*)/m;
+            for(let j=0; j<cookies.length; j++){
+                if(pattern.test(cookies[j])){
+                    var csrf = pattern.exec( cookies[j])[1];
+                }
+            }
+            $.ajax({
+                url: '/reciation/delete/',
+                type: 'POST',
+                dataType: "json", 
+                data:{
+                    csrfmiddlewaretoken: csrf,
+                    word: word,
+                },
+                success: function(data){
+                    location.reload(true);
+                },
+                error: function(data){
+                    location.reload(true);
+                }
+            });
+        }
+        // implement the edit in server 
+        function ediFunction(i){
+            let word = $("td").eq(i*3) .text()
+            $("td").eq(i*3+1).html("");
+            let code= '<input id="EdiMeaning" type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off">'+
+            '<button id="SubBtn" class="btn btn-success">Submit</button>'+
+            '<button id="RetBtn" class="btn btn-danger">Cancel</button>';
+            $("td").eq(i*3+1).append(code);
+
+            $("#SubBtn").click(function(){
+                let meaning= document.getElementById("EdiMeaning").value;
+                console.log(meaning);
+                let cookies = document.cookie.split(',');
+                let pattern = /csrftoken=(.*)/m;
+                for(let j=0; j<cookies.length; j++){
+                    if(pattern.test(cookies[j])){
+                        var csrf = pattern.exec( cookies[j])[1];
+                    }
+                }
+                $.ajax({
+                    url:'/reciation/ediWords/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data:{
+                        csrfmiddlewaretoken: csrf,
+                        word: word,
+                        meaning: meaning,
+                    },
+                    success: function(data){
+                        alert("success");
+                        location.reload(true);
+                    },
+                    error: function(data){
+                        alert("FAIL");
+                    }
+                });
+            });
+            $("#RetBtn").click(function(){
+                location.reload(true);
+            })
+        }
+        // combine the buttons with function
+        for(let i=0; i < delButtons.length; i++){
+            delButtons[i].addEventListener('click', (function(){
+                if(confirm("Are you sure to delete this word?")){
+                    delFunction($("td").eq(i*3).text());
+                }
+            }));
+            ediButtons[i].addEventListener('click',(function(){
+                ediFunction(i);
+            }))
+        }
+
+
+
+        $("button[name='AddRowBtn']").on('click',function(){
+            let code=' <tr>'+
+                '<td><input id="word0" type="text" name="word" placeholder="word" class="form-control" required="required" autocomplete="off"></td>'+
+                '<td><input id="meaning" type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off"></td>'+
+                '<td><button id="AddBtn" class="btn btn-primary">Submit</button>'+
+                    '<button id="CanBtn" class="btn btn-danger">Cancel</button></td>'+
+                '</tr> ';
+            $("#WordList tbody").append(code);
+            document.getElementById("AddRowBtn").disabled=true;
+    
+            $("#AddBtn").click(function(){
+                let cookies = document.cookie.split(',');
+                let pattern = /csrftoken=(.*)/m;
+                for(let j=0; j<cookies.length; j++){
+                    if(pattern.test(cookies[j])){
+                        var csrf = pattern.exec( cookies[j])[1];
+                    }
+                }
+                let word= document.getElementById("word0").value;
+                let meaning= document.getElementById("meaning").value;
+                $.ajax({
+                    url: '/reciation/addwords/',
+                    type: 'POST',
+                    dataType: 'json',
+                    data: {
+                        word: word,
+                        meaning: meaning,
+                        csrfmiddlewaretoken: csrf,
+                    },
+                    success: function(data){
+                        location.reload(true);
+                    },
+                    error: function(data){
+                        location.reload(true);
+                    }
+                });
+            }); 
+            $("#CanBtn").click(function(){
+                location.reload(true);
+            })
+        });
+
+
+    </script>
+{% endblock script %}

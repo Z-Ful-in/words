@@ -1,0 +1,41 @@
+{% extends "Layout/basic.html" %}
+
+
+{% block content %}
+<div class="panel-heading" style="text-align: center;">
+    <h3 class="panel-title">Add New Word</h3>
+    <div class="panel-body" style="text-align: center;">
+        <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>word</th>
+                <th>meaning</th>
+                <th>example</th>
+            </tr>
+            <tbody>
+                <tr>
+                    <form id="form_add" method="post">
+                        {% csrf_token %}
+                            <td><input type="text" name="word" placeholder="word" class="form-control" required="required" autocomplete="off"></td>
+                            <td><input type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off"></td>
+                            <td><input type="text" name="example" placeholder="example" class="form-control" autocomplete="off"></td>
+                </tr>
+            </tbody>
+        </thead>
+    </table>
+    <button id="Back" class="btn btn-primary">Back</button>
+    <button type="submit" class="btn btn-primary" value="Submit" />
+    Submit
+    </button>
+    </form>
+</div>
+{% endblock content %}
+{% block script %}
+<script>
+    $("#Back").click(function(){
+        window.history.back(-1);
+    });
+</script>
+{% endblock script %}
+
+
