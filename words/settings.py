@@ -80,7 +80,7 @@ WSGI_APPLICATION = 'words.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'wordremember',
+        'NAME': 'memory',
         'USER':'root',
         'PASSWORD':'',
         'HOST':'localhost',

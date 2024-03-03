@@ -29,7 +29,7 @@
                           <td>{{ word.word }}</td>
                            <td>{{ word.meaning }}</td>
                             <td>
-                                <button id="EdiBtn" class="btn btn-primary">Edit</button>
+                                <button id="EdiBtn" class="btn btn-primary" >Edit</button>
                                 <button id="delBtn" class="btn btn-danger">Delete</button>
                             </td>
                         </tr>   
@@ -81,8 +81,10 @@
         // implement the edit in server 
         function ediFunction(i){
             let word = $("td").eq(i*3) .text()
+            let meaning = $("td").eq(i*3+1).text();
             $("td").eq(i*3+1).html("");
-            let code= '<input id="EdiMeaning" type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off">'+
+            let code= '<input id="EdiMeaning" type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off"'+
+            ' value="'+meaning+'">'+
             '<button id="SubBtn" class="btn btn-success">Submit</button>'+
             '<button id="RetBtn" class="btn btn-danger">Cancel</button>';
             $("td").eq(i*3+1).append(code);
