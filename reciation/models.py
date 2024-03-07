@@ -15,9 +15,6 @@ class Word(models.Model):
     objects = models.Manager()
     def __str__(self):
         return self.word
-
-    class Meta:
-        db_table= 'memory_word'
 # 按照权重由高到低出现在首页。
 # 出现权重应该由 正确率和出现次数共同决定，
 # rate down, submissions down, weight up.
