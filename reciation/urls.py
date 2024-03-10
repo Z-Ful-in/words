@@ -27,7 +27,8 @@ urlpatterns = [
     path('spell/',views.spell,name="spell"),
     path('check/',views.check, name="check"),
     path('recite/',views.recite,name="recite"),
-    path('printList',views.printList,name="printList"),
+    # path('printList',views.printList,name="printList"),
     path('recite1d',views.one_day_words_recite,name="recite1"),
     path('spell1d',views.one_day_words_spell,name="spell1"),
+    path('search/',views.search,name="search"),
 ]

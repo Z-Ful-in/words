@@ -16,6 +16,9 @@ def addwords(request):
         form = ShowWordForm(request.POST)
         if form.is_valid():
             form.save()
+        else:
+            word_error = form.errors.get('word')
+            return render(request,'addwords.html',{'word_error':word_error})
     return render(request,'addwords.html')
 
 
@@ -108,23 +111,30 @@ def recite(request):
         word = request.POST.get('word')
         status = request.POST.get('status')
         obj = models.Word.objects.filter(word=word).first()
+        obj.submission += 1
         if status == 'rem':
+            obj.correct += 1
             obj.memory_strength +=0.5
+            obj.correct_rate = obj.correct / obj.submission
             obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','rate':obj.correct_rate,'meaning':obj.meaning})
         elif status == 'blur':
             obj.memory_strength -=0.5
+            obj.correct_rate = obj.correct / obj.submission
             obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
         elif status == 'for':
             obj.memory_strength -=1
+            obj.correct_rate = obj.correct / obj.submission
             obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
         elif status == 'fam':
+            obj.correct += 1
             obj.memory_strength +=5
+            obj.correct_rate = obj.correct / obj.submission
             obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
@@ -153,12 +163,25 @@ def one_day_words_spell(request):
         return render(request, 'spell.html', {'form': form})
     return render(request, 'spell.html')
 
-def printList(request):
-    """print the list of words and their meanings"""
-    with open('wordList.txt','w', encoding='utf-8') as f:
-        for word in models.Word.objects.all():
-            f.write(word.word+'\t'+word.meaning+'\n')
-    return redirect('display')
+# def printList(request):
+#     """print the list of words and their meanings"""
+#     with open('wordList.txt','w', encoding='utf-8') as f:
+#         for word in models.Word.objects.all():
+#             f.write(word.word+'\t'+word.meaning+'\n')
+#     return redirect('display')
+
+def search(request):
+    """search the words and their meanings"""
+    if request.method == 'GET':
+        return render(request,'search.html')
+    if request.method == 'POST':
+        word = request.POST.get('word')
+        form = models.Word.objects.filter(word__icontains=word)
+        data={'words':[],'meanings':[]}
+        for i in form:
+            data['words'].append(i.word)
+            data['meanings'].append(i.meaning)
+        return JsonResponse(data)
 
 def page_not_found(request,exception):
     return render(request,'404.html')

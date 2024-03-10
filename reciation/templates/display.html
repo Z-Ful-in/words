@@ -38,11 +38,14 @@
             </thead> 
         </table>
     </div>
-    <a href="/reciation/printList" class="btn btn-success">Print Your WordList</a>
+   <!-- <a href="/reciation/printList" class="btn btn-success">Print Your WordList</a>
+   -->
     <a href="/reciation" class="btn btn-primary ">Recite</a>
     <button name="AddRowBtn" class="btn btn-primary" id="AddRowBtn">Add</button>
     <a href="/reciation/spell" class="btn btn-primary ">Spell</a>
-
+    <br><br>
+        <input id="listWord" type="search" placeholder="Search a word" aria-label="Search"  autocomplete="off">
+        <button id="SeaBtn" class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
 </div>
 {% endblock content %}
 
@@ -176,7 +179,57 @@
                 location.reload(true);
             })
         });
-
+    
+        $("#SeaBtn").on('click',function(){
+            let word = document.getElementById("listWord").value;
+            let cookies = document.cookie.split(',');
+            let pattern = /csrftoken=(.*)/m;
+            for(let j=0; j<cookies.length; j++){
+                if(pattern.test(cookies[j])){
+                    var csrf = pattern.exec( cookies[j])[1];
+                }
+            }
+            $.ajax({
+                url: '/reciation/search/',
+                type: 'POST',
+                dataType: 'json',
+                data:{
+                    word: word,
+                    csrfmiddlewaretoken: csrf,
+                },
+                success: function(data){
+                    let words = data.words;
+                    let meanings = data.meanings;
+                    let code = "";
+                    for(let i=0; i<words.length; i++){
+                        code += '<tr>'+
+                        '<td>'+words[i]+'</td>'+
+                        '<td>'+meanings[i]+'</td>'+
+                        '<td>'+
+                            '<button id="EdiBtn" class="btn btn-primary" >Edit</button>'+
+                            '<button id="delBtn" class="btn btn-danger">Delete</button>'+
+                        '</td>'+
+                    '</tr>';
+                    }
+                    $("#WordList tbody").html(code);
+                    delButtons = document.querySelectorAll('button[id="delBtn"]');
+                    ediButtons=document.querySelectorAll('button[id="EdiBtn"]');
+                    for(let i=0; i<words.length; i++){
+                        delButtons[i].addEventListener('click', (function(){
+                            if(confirm("Are you sure to delete this word?")){
+                                delFunction($("td").eq(i*3).text());
+                            }
+                        }));
+                        ediButtons[i].addEventListener('click',(function(){
+                            ediFunction(i);
+                        }))
+                    }
+                },
+                error: function(data){
+                    alert("FAIL");
+                }
+            });
+        });
 
     </script>
 {% endblock script %}

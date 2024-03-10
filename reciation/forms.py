@@ -11,6 +11,13 @@ class ShowWordForm(forms.ModelForm):
     meaning=forms.CharField(max_length=100)
     example=forms.CharField(max_length=100, required=False)
 
+    def clean_word(self):
+        word=self.cleaned_data['word']
+        exist = Word.objects.filter(word=word)
+        if exist:
+            raise forms.ValidationError('This word already exists')
+        return word
+
     def __str__(self):
         return self.word
     class Meta:

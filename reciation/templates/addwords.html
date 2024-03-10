@@ -16,7 +16,11 @@
                 <tr>
                     <form id="form_add" method="post">
                         {% csrf_token %}
-                            <td><input type="text" name="word" placeholder="word" class="form-control" required="required" autocomplete="off"></td>
+                            <td><input type="text" name="word" placeholder="word" class="form-control" required="required" autocomplete="off">
+                                        {% if word_error %}
+                                            <span class="error"><font color="red">{{ word_error }}</font></span>
+                                        {% endif %}
+                            </td>
                             <td><input type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off"></td>
                             <td><input type="text" name="example" placeholder="example" class="form-control" autocomplete="off"></td>
                 </tr>
