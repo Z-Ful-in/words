@@ -15,6 +15,11 @@ class Word(models.Model):
     objects = models.Manager()
     def __str__(self):
         return self.word
+    
+    # 保存时自动计算occur_weight
+    def save(self, *args, **kwargs):
+        self.occur_weight = self.memory_strength * (self.correct_rate+1)
+        super(Word, self).save(*args, **kwargs)
 # 按照权重由高到低出现在首页。
 # 出现权重应该由 正确率和出现次数共同决定，
 # rate down, submissions down, weight up.

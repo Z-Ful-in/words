@@ -95,13 +95,11 @@ def check(request):
             obj.correct += 1
             obj.correct_rate = obj.correct / obj.submission
             obj.memory_strength += 0.5
-            obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','correct_rate':obj.correct_rate})
         else:
             obj.correct_rate = obj.correct / obj.submission
             obj.memory_strength -= 1
-            obj.occur_weight = obj.memory_strength * (obj.correct_rate+1) 
             obj.save()
         return JsonResponse({'status':'error','word':obj.word})
 
@@ -116,26 +114,22 @@ def recite(request):
             obj.correct += 1
             obj.memory_strength +=0.5
             obj.correct_rate = obj.correct / obj.submission
-            obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','rate':obj.correct_rate,'meaning':obj.meaning})
         elif status == 'blur':
             obj.memory_strength -=0.5
             obj.correct_rate = obj.correct / obj.submission
-            obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
         elif status == 'for':
             obj.memory_strength -=1
             obj.correct_rate = obj.correct / obj.submission
-            obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
         elif status == 'fam':
             obj.correct += 1
             obj.memory_strength +=5
             obj.correct_rate = obj.correct / obj.submission
-            obj.occur_weight = obj.memory_strength * (obj.correct_rate+1)
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
         return JsonResponse({'status':'success'})
