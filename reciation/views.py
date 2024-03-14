@@ -1,11 +1,11 @@
 from django.shortcuts import render,redirect
 from django.http import HttpResponse, JsonResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from reportlab.pdfgen import canvas
 from .forms import ShowWordForm
 from . import models
 import datetime
 import random
+from utils import getForm
 # from Spire.doc import *
 # from Spire.doc.common import *
 # Create your views here.
@@ -29,10 +29,7 @@ def home(request):
     """
     if request.method == 'GET':
         # "Randomly"(by correct) display 5 words from the database
-        form = models.Word.objects.all().order_by('memory_strength')[:10]
-        # disrupt the order of the form randomly
-        # form = form.order_by('?')  It's wrong as you have get the slice
-        form = sorted(form,key=lambda x:random.random())
+        form = getForm.getForm(10,'memory_strength','last_correct')
         return render(request, 'home.html', {'form': form})
     # if request.method == 'POST':
     #     form = ShowWordForm(request.POST)
@@ -77,9 +74,7 @@ def ediWords(request):
 def spell(request):
     if request.method == 'GET':
         # "Randomly" display 10 words from the database
-        form = models.Word.objects.all().order_by('memory_strength')[:10]
-        # disrupt the order of the form randomly
-        form = sorted(form,key=lambda x:random.random())
+        form = getForm.getForm(10,'memory_strength','last_correct')
         return render(request, 'spell.html', {'form': form})
     return render(request,'spell.html')
 
@@ -99,7 +94,10 @@ def check(request):
             return JsonResponse({'status':'success','correct_rate':obj.correct_rate})
         else:
             obj.correct_rate = obj.correct / obj.submission
-            obj.memory_strength -= 1
+            if obj.memory_strength <= 6:
+                obj.memory_strength -= 1
+            else:
+                obj.memory_strength = 6
             obj.save()
         return JsonResponse({'status':'error','word':obj.word})
 
