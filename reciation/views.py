@@ -115,12 +115,18 @@ def recite(request):
             obj.save()
             return JsonResponse({'status':'success','rate':obj.correct_rate,'meaning':obj.meaning})
         elif status == 'blur':
-            obj.memory_strength -=0.5
+            if obj.memory_strength <= 6:
+                obj.memory_strength -= 0.5
+            else:
+                obj.memory_strength = 6
             obj.correct_rate = obj.correct / obj.submission
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
         elif status == 'for':
-            obj.memory_strength -=1
+            if obj.memory_strength <= 6:
+                obj.memory_strength -= 1
+            else:
+                obj.memory_strength = 6
             obj.correct_rate = obj.correct / obj.submission
             obj.save()
             return JsonResponse({'status':'success','meaning':obj.meaning,'word':obj.word})
@@ -167,12 +173,18 @@ def search(request):
     if request.method == 'GET':
         return render(request,'search.html')
     if request.method == 'POST':
-        word = request.POST.get('word')
-        form = models.Word.objects.filter(word__icontains=word)
-        data={'words':[],'meanings':[]}
+        seaData = request.POST.get('seaData')
+        # Jugde whether the data string is word(engString) or meaning(cheseString)
+        if seaData.encode('UTF-8').isalpha():
+            form = models.Word.objects.filter(word__icontains=seaData)
+        else:
+            # For the Chinese string, we need to use the icontains 
+            form = models.Word.objects.filter(meaning__icontains=seaData)
+        data={'words':[],'meanings':[],'examples':[]}
         for i in form:
             data['words'].append(i.word)
             data['meanings'].append(i.meaning)
+            data['examples'].append(i.example)
         return JsonResponse(data)
 
 def page_not_found(request,exception):

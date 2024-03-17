@@ -21,6 +21,7 @@
                 <tr>
                     <th>Word</th>
                     <th>Meaning</th>
+                    <th>Example</th>
                     <th>Operation</th>
                 </tr>
                 <tbody>
@@ -28,6 +29,7 @@
                         <tr>
                           <td>{{ word.word }}</td>
                            <td>{{ word.meaning }}</td>
+                           <td>{{ word.example }}</td>
                             <td>
                                 <button id="EdiBtn" class="btn btn-primary" >Edit</button>
                                 <button id="delBtn" class="btn btn-danger">Delete</button>
@@ -44,7 +46,7 @@
     <button name="AddRowBtn" class="btn btn-primary" id="AddRowBtn">Add</button>
     <a href="/reciation/spell" class="btn btn-primary ">Spell</a>
     <br><br>
-        <input id="listWord" type="search" placeholder="Search a word" aria-label="Search"  autocomplete="off">
+        <input id="seaBody" type="search" placeholder="Search a word" aria-label="Search"  autocomplete="off">
         <button id="SeaBtn" class="btn btn-outline-primary my-2 my-sm-0" type="submit">Search</button>
 </div>
 {% endblock content %}
@@ -83,17 +85,18 @@
         }
         // implement the edit in server 
         function ediFunction(i){
-            let word = $("td").eq(i*3) .text()
-            let meaning = $("td").eq(i*3+1).text();
-            $("td").eq(i*3+1).html("");
-            let code= '<input id="EdiMeaning" type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off"'+
+            let word = $("td").eq(i*4) .text()
+            let meaning = $("td").eq(i*4+1).text();
+            $("td").eq(i*4+1).html("");
+            let code= '<input id='+i+' type="text" name="meaning" placeholder="meaning" class="form-control" required="required" autocomplete="off"'+
             ' value="'+meaning+'">'+
-            '<button id="SubBtn" class="btn btn-success">Submit</button>'+
-            '<button id="RetBtn" class="btn btn-danger">Cancel</button>';
-            $("td").eq(i*3+1).append(code);
-
-            $("#SubBtn").click(function(){
-                let meaning= document.getElementById("EdiMeaning").value;
+            '<button id='+word+' class="btn btn-success">Submit</button>'+
+            '<button id='+word+word+' class="btn btn-danger">Cancel</button>';
+            $("td").eq(i*4+1).append(code);
+            buttonid1 = '#'+word;
+            buttonid2 = '#'+word+word;
+            $(buttonid1).click(function(){
+                let meaning= document.getElementById(i).value;
                 console.log(meaning);
                 let cookies = document.cookie.split(',');
                 let pattern = /csrftoken=(.*)/m;
@@ -120,7 +123,7 @@
                     }
                 });
             });
-            $("#RetBtn").click(function(){
+            $(buttonid2).click(function(){
                 location.reload(true);
             })
         }
@@ -128,7 +131,7 @@
         for(let i=0; i < delButtons.length; i++){
             delButtons[i].addEventListener('click', (function(){
                 if(confirm("Are you sure to delete this word?")){
-                    delFunction($("td").eq(i*3).text());
+                    delFunction($("td").eq(i*4).text());
                 }
             }));
             ediButtons[i].addEventListener('click',(function(){
@@ -181,7 +184,7 @@
         });
     
         $("#SeaBtn").on('click',function(){
-            let word = document.getElementById("listWord").value;
+            let seaData = document.getElementById("seaBody").value;
             let cookies = document.cookie.split(',');
             let pattern = /csrftoken=(.*)/m;
             for(let j=0; j<cookies.length; j++){
@@ -194,30 +197,32 @@
                 type: 'POST',
                 dataType: 'json',
                 data:{
-                    word: word,
+                    seaData: seaData,
                     csrfmiddlewaretoken: csrf,
                 },
                 success: function(data){
                     let words = data.words;
                     let meanings = data.meanings;
+                    let examples = data.examples;
                     let code = "";
                     for(let i=0; i<words.length; i++){
                         code += '<tr>'+
-                        '<td>'+words[i]+'</td>'+
-                        '<td>'+meanings[i]+'</td>'+
-                        '<td>'+
-                            '<button id="EdiBtn" class="btn btn-primary" >Edit</button>'+
-                            '<button id="delBtn" class="btn btn-danger">Delete</button>'+
-                        '</td>'+
-                    '</tr>';
+                            '<td>'+words[i]+'</td>'+
+                            '<td>'+meanings[i]+'</td>'+
+                            '<td>'+examples[i]+'</td>'+
+                            '<td>'+
+                                '<button id="EdiBtn" class="btn btn-primary" >Edit</button>'+
+                                '<button id="delBtn" class="btn btn-danger">Delete</button>'+
+                            '</td>'+
+                        '</tr>';
                     }
                     $("#WordList tbody").html(code);
-                    delButtons = document.querySelectorAll('button[id="delBtn"]');
-                    ediButtons=document.querySelectorAll('button[id="EdiBtn"]');
-                    for(let i=0; i<words.length; i++){
+                    let delButtons = document.querySelectorAll('button[id="delBtn"]');
+                    let ediButtons=document.querySelectorAll('button[id="EdiBtn"]');
+                    for(let i=0; i < delButtons.length; i++){
                         delButtons[i].addEventListener('click', (function(){
                             if(confirm("Are you sure to delete this word?")){
-                                delFunction($("td").eq(i*3).text());
+                                delFunction($("td").eq(i*4).text());
                             }
                         }));
                         ediButtons[i].addEventListener('click',(function(){
