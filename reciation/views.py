@@ -9,6 +9,10 @@ from utils import getForm
 # from Spire.doc import *
 # from Spire.doc.common import *
 # Create your views here.
+
+
+TodayWordIndex = 0
+
 def addwords(request):
     if request.method == 'GET':
         return render(request,'addwords.html')
@@ -142,22 +146,30 @@ def one_day_words_recite(request):
     """recite the words that have been added, and 
         create date is less than one day from today"""
     if request.method == 'GET':
+        global TodayWordIndex
         total_form = models.Word.objects.filter(create_time__date__gt=datetime.date.today()\
                                                 -datetime.timedelta(days=2))
-        form = total_form.order_by('memory_strength')[:10]
+        if TodayWordIndex >= len(total_form):
+            TodayWordIndex = 0
+        form = total_form.order_by('-create_time')[TodayWordIndex:TodayWordIndex+10]
         # disrupt the order of the form randomly
         form = sorted(form,key=lambda x:random.random())
+        TodayWordIndex += 10
         return render(request, 'home.html', {'form': form})
     return render(request, 'home.html')
 
 def one_day_words_spell(request):
     """spell the words that have been added today"""
     if request.method == 'GET':
+        global TodayWordIndex
         total_form = models.Word.objects.filter(create_time__date__gt=datetime.date.today()\
                                                 -datetime.timedelta(days=2))     
-        form= total_form.order_by('memory_strength')[:10] 
+        if TodayWordIndex >= len(total_form):
+            TodayWordIndex = 0
+        form= total_form.order_by('-create_time')[TodayWordIndex:TodayWordIndex+10] 
         # disrupt the order of the form randomly
         form = sorted(form,key=lambda x:random.random())
+        TodayWordIndex += 10
         return render(request, 'spell.html', {'form': form})
     return render(request, 'spell.html')
 
